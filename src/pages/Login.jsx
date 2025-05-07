@@ -2,6 +2,7 @@ import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom"
 import { toast, ToastContainer } from "react-toastify";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
     const url = "http://localhost:8080";
@@ -9,6 +10,7 @@ export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
+    const { login } = useAuth();
     const navigate = useNavigate();
 
     const goToRegister = () => {
@@ -22,14 +24,14 @@ export default function Login() {
         }
 
         try {
-            await axios.post(`${url}/invite/login`, {
-                email,
-                password
-            })
-            toast.success("Login realizado com sucesso!");
-            setTimeout(() => {
-                navigate("/home");
-            }, 1000);
+            const response = await axios.post(`${url}/invite/login`, { email, password });
+            if (response.status === 200) {
+                login(response.data.token);
+                toast.success("Login realizado com sucesso!");
+                setTimeout(() => {
+                    navigate("/home");
+                }, 1000);
+            }
         } catch (error) {
             console.log(error);
             toast.error("Erro ao realizar login!");
